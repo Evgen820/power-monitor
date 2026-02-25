@@ -48,29 +48,31 @@ async def make_screenshot():
             });
         """)
         await page.wait_for_timeout(500)
-# 🔹 Заповнюємо поле міста
-await page.evaluate(f"""
-    const city = document.querySelector('#locality_form');
-    if(city) {{ city.value = "{CITY}"; city.dispatchEvent(new Event('input')) }}
-""")
-await page.wait_for_timeout(1000)  # чекаємо, поки JS обробить
 
-# 🔹 Заповнюємо поле вулиці
-await page.evaluate(f"""
-    const street = document.querySelector('#street_form');
-    if(street) {{ street.value = "{STREET}"; street.dispatchEvent(new Event('input')) }}
-""")
-await page.wait_for_timeout(1000)
+        # 🔹 Заповнюємо поля по черзі, з невеликими паузами, щоб уникнути Execution Context Error
 
-# 🔹 Заповнюємо поле будинку
-await page.evaluate(f"""
-    const house = document.querySelector('input[name="house"]');
-    if(house) {{ house.value = "{HOUSE}"; house.dispatchEvent(new Event('input')) }}
-""")
-await page.wait_for_timeout(4000)  # чекаємо, поки JS побудує графік
+        # Поле міста
+        await page.evaluate(f"""
+            const city = document.querySelector('#locality_form');
+            if(city) {{ city.value = "{CITY}"; city.dispatchEvent(new Event('input')) }}
+        """)
+        await page.wait_for_timeout(1000)
 
+        # Поле вулиці
+        await page.evaluate(f"""
+            const street = document.querySelector('#street_form');
+            if(street) {{ street.value = "{STREET}"; street.dispatchEvent(new Event('input')) }}
+        """)
+        await page.wait_for_timeout(1000)
 
-        # 🔹 Робимо скріншот
+        # Поле будинку
+        await page.evaluate(f"""
+            const house = document.querySelector('input[name="house"]');
+            if(house) {{ house.value = "{HOUSE}"; house.dispatchEvent(new Event('input')) }}
+        """)
+        await page.wait_for_timeout(4000)  # чекаємо, поки JS побудує графік
+
+        # 🔹 Скриншот графіка
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
 
