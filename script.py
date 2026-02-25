@@ -26,41 +26,35 @@ async def make_screenshot():
         page = await browser.new_page()
         await page.goto(URL, timeout=60000)
 
+        # чекаємо завершення JS
         await page.wait_for_load_state("networkidle")
-
-        # =========================
-        # Закриття попапу (якщо є)
-        # =========================
-        try:
-            # варіант 1 — кнопка "Прийняти"
-            await page.locator("button:has-text('Прийняти')").click(timeout=3000)
-        except:
-            try:
-                # варіант 2 — кнопка "Закрити"
-                await page.locator("button:has-text('Закрити')").click(timeout=3000)
-            except:
-                pass  # якщо попапу немає — просто йдемо далі
-
         await page.wait_for_timeout(2000)
 
-        # =========================
-        # Заповнення форми
-        # =========================
+        # видаляємо поп-апи
+        await page.evaluate("""
+            document.querySelectorAll('.modal, .popup, .overlay').forEach(el => el.remove());
+        """)
+        await page.wait_for_timeout(2000)
+
+        # чекаємо видимість і заповнюємо форму
+        await page.locator("#locality_form").wait_for(state="visible", timeout=10000)
         await page.locator("#locality_form").fill(CITY)
         await page.wait_for_timeout(1000)
 
+        await page.locator("#street_form").wait_for(state="visible", timeout=10000)
         await page.locator("#street_form").fill(STREET)
         await page.wait_for_timeout(1000)
 
+        await page.locator("input[name='house']").wait_for(state="visible", timeout=10000)
         await page.locator("input[name='house']").fill(HOUSE)
         await page.wait_for_timeout(1000)
 
+        # натискаємо кнопку пошуку
         await page.locator("button[type='submit']").click()
-
         await page.wait_for_timeout(8000)
 
+        # робимо скрін
         await page.screenshot(path=SCREENSHOT, full_page=True)
-
         await browser.close()
 
 async def main():
