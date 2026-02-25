@@ -42,16 +42,15 @@ async def make_screenshot():
 
         # Закриваємо поп-ап кліком поза формою
         await page.mouse.click(10, 10)
-        await page.wait_for_timeout(2500)  # чекаємо стабілізацію сторінки
+        await page.wait_for_timeout(2500)  # пауза для стабілізації
 
-        # --------------------------
+        # ===========================
         # Населений пункт
-        # --------------------------
+        # ===========================
         locator = page.locator('#locality_form')
         box = await locator.bounding_box()
         if box:
             await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.fill('#locality_form', '')
             await page.type('#locality_form', CITY, delay=100)
             await page.wait_for_timeout(1500)
             option_city = page.locator(f'text="{CITY}"')
@@ -60,14 +59,13 @@ async def make_screenshot():
         else:
             print("Не вдалося знайти поле #locality_form")
 
-        # --------------------------
+        # ===========================
         # Вулиця
-        # --------------------------
+        # ===========================
         locator = page.locator('#street_form')
         box = await locator.bounding_box()
         if box:
             await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.fill('#street_form', '')
             await page.type('#street_form', STREET, delay=100)
             await page.wait_for_timeout(1500)
             option_street = page.locator(f'text="{STREET}"')
@@ -76,22 +74,21 @@ async def make_screenshot():
         else:
             print("Не вдалося знайти поле #street_form")
 
-        # --------------------------
+        # ===========================
         # Номер будинку
-        # --------------------------
+        # ===========================
         house_input = page.locator('input[name="house"]')
         box = await house_input.bounding_box()
         if box:
             await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.fill('input[name="house"]', '')
             await page.type('input[name="house"]', HOUSE, delay=100)
             await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
         else:
             print("Не вдалося знайти поле для номера будинку")
 
-        # --------------------------
+        # ===========================
         # Скриншот
-        # --------------------------
+        # ===========================
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
 
