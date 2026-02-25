@@ -28,29 +28,15 @@ async def make_screenshot():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
-        await page.goto(URL, timeout=60000)
-        await page.wait_for_load_state("networkidle")
-        await page.wait_for_timeout(2000)  # даємо час поп-апу з'явитись
+await page.goto(URL, timeout=60000)
+await page.wait_for_load_state("networkidle")
+await page.wait_for_timeout(2000)  # даємо час поп-апу з'явитись
 
-        # Закриваємо поп-ап одразу після завантаження сторінки
-        try:
-            close_button = page.locator(
-                'button[aria-label="Закрити"], .modal__close, .popup__close, .close-button, .popup__close-btn'
-            )
-            await close_button.wait_for(timeout=5000)
-            await close_button.click()
-            await page.wait_for_timeout(500)
-        except Exception:
-            pass
+# Закриваємо поп-ап кліком поза формою
+await page.mouse.click(10, 10)
+await page.wait_for_timeout(1000)
 
-        # Робимо поля видимими
-        await page.evaluate("""
-            ['#locality_form','#street_form','input[name="house"]'].forEach(id => {
-                const el = document.querySelector(id);
-                if (el) { el.style.display='block'; el.removeAttribute('hidden'); }
-            });
-        """)
-        await page.wait_for_timeout(500)
+     
 
         # Заповнюємо поле міста
         await page.evaluate(f"""
