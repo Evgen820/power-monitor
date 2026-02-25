@@ -20,7 +20,7 @@ async def select_autocomplete(page, input_selector, full_text):
         await asyncio.sleep(0.2)
         await input_el.type(full_text, delay=100)  # печатаем по буквам
         dropdown_item = page.locator(f"ul[data-list] li:has-text('{full_text}')")
-        await dropdown_item.wait_for(state="visible", timeout=5000)
+        await dropdown_item.wait_for(state="hidden", timeout=5000)
         await dropdown_item.click()
     except Exception as e:
         print(f"Ошибка: поле {input_selector} не активне или автокомпліт не з’явився. {e}")
