@@ -70,10 +70,6 @@ await page.evaluate(f"""
 await page.wait_for_timeout(4000)  # чекаємо, поки JS побудує графік
 
 
-
-        # 🔹 Чекаємо 5 секунд, щоб JS оновив графік
-        await page.wait_for_timeout(5000)
-
         # 🔹 Робимо скріншот
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
