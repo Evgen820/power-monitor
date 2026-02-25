@@ -3,8 +3,8 @@ from playwright.async_api import async_playwright
 from telegram import Bot
 
 # Твої значення
-TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-CHAT_ID = "YOUR_CHAT_ID"
+TOKEN = "8307155981:AAEW0ZxzKgooySIjShzRq19IJ0V7I5uDVFQ"
+CHAT_ID = 366025497
 
 CITY = "с. Софіївська Борщагівка"
 STREET = "вул. Січова"
