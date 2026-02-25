@@ -27,6 +27,19 @@ def get_hash(path):
     with open(path, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
 
+async def select_autocomplete(page, selector, text):
+    """Вводимо текст в поле та обираємо перший варіант автокомпліту"""
+    input_el = page.locator(selector)
+    await input_el.click()
+    await input_el.fill("")  # очистимо поле
+    for char in text:
+        await input_el.type(char, delay=100)  # вводимо по буквах
+    # чекаємо поки з’явиться список автокомпліту
+    dropdown_item = page.locator("ul[data-list] li").first
+    await dropdown_item.wait_for(state="visible", timeout=5000)
+    await dropdown_item.click()  # вибираємо перший варіант
+    await page.wait_for_timeout(500)
+
 # =========================
 # Основна функція
 # =========================
@@ -45,28 +58,13 @@ async def make_screenshot():
         await page.wait_for_timeout(1500)
 
         # ===========================
-        # Заповнюємо поля через JS
+        # Заповнюємо поля через автокомпліт
         # ===========================
-        await page.evaluate(f"""
-            (() => {{
-                // Населений пункт
-                const cityInput = document.querySelector('#locality_form');
-                cityInput.value = "{CITY}";
-                cityInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                
-                // Вулиця
-                const streetInput = document.querySelector('#street_form');
-                streetInput.value = "{STREET}";
-                streetInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                
-                // Будинок
-                const houseInput = document.querySelector('#house');
-                houseInput.value = "{HOUSE}";
-                houseInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-            }})();
-        """)
+        await select_autocomplete(page, "#locality_form", CITY)
+        await select_autocomplete(page, "#street_form", STREET)
+        await select_autocomplete(page, "#house", HOUSE)
         
-        # Чекаємо поки графік підвантажиться
+        # Чекаємо поки графік згенерується
         await page.wait_for_timeout(4000)
 
         # ===========================
