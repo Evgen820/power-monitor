@@ -8,8 +8,8 @@ from playwright.async_api import async_playwright
 # =========================
 # 🔧 Налаштування
 # =========================
-TOKEN = os.getenv("TOKEN")       # Telegram bot token
-CHAT_ID = os.getenv("CHAT_ID")   # ваш chat id
+TOKEN = "8307155981:AAEW0ZxzKgooySIjShzRq19IJ0V7I5uDVFQ"
+CHAT_ID = 366025497
 
 URL = "https://www.dtek-krem.com.ua/ua/shutdowns"
 CITY = "с. Софіївська Борщагівка"
