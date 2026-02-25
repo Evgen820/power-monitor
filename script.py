@@ -1,15 +1,15 @@
 import asyncio
 import hashlib
-from playwright.async_api import async_playwright
-from telegram import Bot
 from pathlib import Path
 import os
+from telegram import Bot
+from playwright.async_api import async_playwright
 
 # =========================
 # 🔧 Налаштування
 # =========================
-TOKEN = os.getenv("TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+TOKEN = os.getenv("TOKEN")       # Telegram bot token
+CHAT_ID = os.getenv("CHAT_ID")   # ваш chat id
 
 URL = "https://www.dtek-krem.com.ua/ua/shutdowns"
 CITY = "с. Софіївська Борщагівка"
@@ -17,7 +17,7 @@ STREET = "вул. Січова"
 HOUSE = "29"
 
 SCREENSHOT = "current.png"
-HASH_FILE = ".cache/power_monitor_hash.txt"
+HASH_FILE = ".cache/power_monitor_hash.txt"  # зберігаємо локально
 Path(".cache").mkdir(parents=True, exist_ok=True)
 
 # =========================
@@ -34,7 +34,7 @@ async def make_screenshot():
         await page.wait_for_load_state("networkidle")
         await page.wait_for_timeout(2000)
 
-        # 🔹 Закриваємо поп-апи
+        # 🔹 Закриваємо всі поп-апи
         await page.evaluate("""
             document.querySelectorAll('.modal, .popup, .overlay').forEach(el => el.remove());
         """)
@@ -49,21 +49,20 @@ async def make_screenshot():
         """)
         await page.wait_for_timeout(500)
 
-        # 🔹 Клік + slow type
-        await page.locator("#locality_form").click()
-        await page.locator("#locality_form").type(CITY, delay=100)
+        # 🔹 Заповнюємо поля напряму + trigger input events для JS
+        await page.evaluate(f"""
+            const city = document.querySelector('#locality_form');
+            const street = document.querySelector('#street_form');
+            const house = document.querySelector('input[name="house"]');
+            if (city) {{ city.value = "{CITY}"; city.dispatchEvent(new Event('input')) }}
+            if (street) {{ street.value = "{STREET}"; street.dispatchEvent(new Event('input')) }}
+            if (house) {{ house.value = "{HOUSE}"; house.dispatchEvent(new Event('input')) }}
+        """)
 
-        await page.locator("#street_form").click()
-        await page.locator("#street_form").type(STREET, delay=100)
+        # 🔹 Чекаємо 5 секунд, щоб JS оновив графік
+        await page.wait_for_timeout(5000)
 
-        await page.locator("input[name='house']").click()
-        await page.locator("input[name='house']").type(HOUSE, delay=100)
-
-        # 🔹 Пошук
-        await page.locator("button[type='submit']").click()
-        await page.wait_for_timeout(8000)
-
-        # 🔹 Скрин
+        # 🔹 Робимо скріншот
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
 
