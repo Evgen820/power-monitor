@@ -12,13 +12,13 @@ TOKEN = os.getenv("TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 URL = "https://www.dtek-krem.com.ua/ua/shutdowns"
-CITY = "Кременчук"
-STREET = "Соборна"
-HOUSE = "15"
+CITY = "с. Софіївська Борщагівка"
+STREET = "вул. Січова"
+HOUSE = "29"
 
 SCREENSHOT = "current.png"
-HASH_FILE = "/github/home/.cache/power_monitor_hash.txt"  # GitHub cache location
-Path(HASH_FILE).parent.mkdir(parents=True, exist_ok=True)
+HASH_FILE = ".cache/power_monitor_hash.txt"
+Path(".cache").mkdir(parents=True, exist_ok=True)
 
 # =========================
 
