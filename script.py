@@ -28,15 +28,23 @@ async def make_screenshot():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
-await page.goto(URL, timeout=60000)
-await page.wait_for_load_state("networkidle")
-await page.wait_for_timeout(2000)  # даємо час поп-апу з'явитись
+        
+        await page.goto(URL, timeout=60000)
+        await page.wait_for_load_state("networkidle")
+        await page.wait_for_timeout(2000)  # даємо час поп-апу з'явитись
 
-# Закриваємо поп-ап кліком поза формою
-await page.mouse.click(10, 10)
-await page.wait_for_timeout(1000)
+        # Закриваємо поп-ап кліком поза формою
+        await page.mouse.click(10, 10)
+        await page.wait_for_timeout(1000)
 
-     
+        # Робимо поля видимими (щоб коректно заповнити)
+        await page.evaluate("""
+            ['#locality_form','#street_form','input[name="house"]'].forEach(id => {
+                const el = document.querySelector(id);
+                if (el) { el.style.display='block'; el.removeAttribute('hidden'); }
+            });
+        """)
+        await page.wait_for_timeout(500)
 
         # Заповнюємо поле міста
         await page.evaluate(f"""
