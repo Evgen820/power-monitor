@@ -25,18 +25,42 @@ async def make_screenshot():
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto(URL, timeout=60000)
-        await page.wait_for_timeout(5000)
 
-        await page.get_by_placeholder("Населений пункт").fill(CITY)
-        await page.wait_for_timeout(1000)
-        await page.get_by_placeholder("Вулиця").fill(STREET)
-        await page.wait_for_timeout(1000)
-        await page.get_by_placeholder("Будинок").fill(HOUSE)
+        await page.wait_for_load_state("networkidle")
+
+        # =========================
+        # Закриття попапу (якщо є)
+        # =========================
+        try:
+            # варіант 1 — кнопка "Прийняти"
+            await page.locator("button:has-text('Прийняти')").click(timeout=3000)
+        except:
+            try:
+                # варіант 2 — кнопка "Закрити"
+                await page.locator("button:has-text('Закрити')").click(timeout=3000)
+            except:
+                pass  # якщо попапу немає — просто йдемо далі
+
+        await page.wait_for_timeout(2000)
+
+        # =========================
+        # Заповнення форми
+        # =========================
+        await page.locator("#locality_form").fill(CITY)
         await page.wait_for_timeout(1000)
 
-        
+        await page.locator("#street_form").fill(STREET)
+        await page.wait_for_timeout(1000)
+
+        await page.locator("input[name='house']").fill(HOUSE)
+        await page.wait_for_timeout(1000)
+
+        await page.locator("button[type='submit']").click()
+
+        await page.wait_for_timeout(8000)
 
         await page.screenshot(path=SCREENSHOT, full_page=True)
+
         await browser.close()
 
 async def main():
