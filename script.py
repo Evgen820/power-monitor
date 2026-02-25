@@ -42,44 +42,52 @@ async def make_screenshot():
 
         # Закриваємо поп-ап кліком поза формою
         await page.mouse.click(10, 10)
-        await page.wait_for_timeout(1000)
+        await page.wait_for_timeout(2500)  # чекаємо стабілізацію сторінки
 
         # --------------------------
         # Населений пункт
         # --------------------------
-        await page.wait_for_selector('#locality_form', state='visible', timeout=20000)
-        box = await page.locator('#locality_form').bounding_box()
+        locator = page.locator('#locality_form')
+        box = await locator.bounding_box()
         if box:
             await page.mouse.click(box["x"] + 5, box["y"] + 5)
-
-        await page.fill('#locality_form', '')
-        await page.type('#locality_form', CITY, delay=100)
-        await page.wait_for_timeout(1500)
-        option_city = page.locator(f'text="{CITY}"')
-        if await option_city.count() > 0:
-            await option_city.first.click()
+            await page.fill('#locality_form', '')
+            await page.type('#locality_form', CITY, delay=100)
+            await page.wait_for_timeout(1500)
+            option_city = page.locator(f'text="{CITY}"')
+            if await option_city.count() > 0:
+                await option_city.first.click()
+        else:
+            print("Не вдалося знайти поле #locality_form")
 
         # --------------------------
         # Вулиця
         # --------------------------
-        await page.wait_for_selector('#street_form', state='visible', timeout=20000)
-        box = await page.locator('#street_form').bounding_box()
+        locator = page.locator('#street_form')
+        box = await locator.bounding_box()
         if box:
             await page.mouse.click(box["x"] + 5, box["y"] + 5)
-
-        await page.fill('#street_form', '')
-        await page.type('#street_form', STREET, delay=100)
-        await page.wait_for_timeout(1500)
-        option_street = page.locator(f'text="{STREET}"')
-        if await option_street.count() > 0:
-            await option_street.first.click()
+            await page.fill('#street_form', '')
+            await page.type('#street_form', STREET, delay=100)
+            await page.wait_for_timeout(1500)
+            option_street = page.locator(f'text="{STREET}"')
+            if await option_street.count() > 0:
+                await option_street.first.click()
+        else:
+            print("Не вдалося знайти поле #street_form")
 
         # --------------------------
         # Номер будинку
         # --------------------------
-        await page.fill('input[name="house"]', '')
-        await page.type('input[name="house"]', HOUSE, delay=100)
-        await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
+        house_input = page.locator('input[name="house"]')
+        box = await house_input.bounding_box()
+        if box:
+            await page.mouse.click(box["x"] + 5, box["y"] + 5)
+            await page.fill('input[name="house"]', '')
+            await page.type('input[name="house"]', HOUSE, delay=100)
+            await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
+        else:
+            print("Не вдалося знайти поле для номера будинку")
 
         # --------------------------
         # Скриншот
