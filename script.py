@@ -73,18 +73,18 @@ async def make_screenshot():
                 await option_street.first.click()
         else:
             print("Не вдалося знайти поле #street_form")
-
-        # ===========================
-        # Номер будинку
-        # ===========================
-        house_input = page.locator('input[name="house"]')
-        box = await house_input.bounding_box()
-        if box:
-            await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.type('input[name="house"]', HOUSE, delay=100)
-            await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
-        else:
-            print("Не вдалося знайти поле для номера будинку")
+            
+# ===========================
+# Номер будинку
+# ===========================
+house_input = page.locator('#house')  # точний селектор для активного поля
+box = await house_input.bounding_box()
+if box:
+    await page.mouse.click(box["x"] + 5, box["y"] + 5)
+    await page.type('#house', HOUSE, delay=100)
+    await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
+else:
+    print("Не вдалося знайти поле для номера будинку")
 
         # ===========================
         # Скриншот
