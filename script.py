@@ -13,7 +13,7 @@ CHAT_ID = 366025497
 
 URL = "https://www.dtek-krem.com.ua/ua/shutdowns"
 CITY = "с. Софіївська Борщагівка"
-STREET = "вул. Січова"
+STREET = "вул. січова"
 HOUSE = "29"
 
 SCREENSHOT = "current.png"
@@ -29,45 +29,39 @@ async def make_screenshot():
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         
+        # Відкриваємо сайт
         await page.goto(URL, timeout=60000)
         await page.wait_for_load_state("networkidle")
-        await page.wait_for_timeout(2000)  # даємо час поп-апу з'явитись
+        await page.wait_for_timeout(2000)
 
         # Закриваємо поп-ап кліком поза формою
         await page.mouse.click(10, 10)
         await page.wait_for_timeout(1000)
 
-        # Робимо поля видимими (щоб коректно заповнити)
-        await page.evaluate("""
-            ['#locality_form','#street_form','input[name="house"]'].forEach(id => {
-                const el = document.querySelector(id);
-                if (el) { el.style.display='block'; el.removeAttribute('hidden'); }
-            });
-        """)
-        await page.wait_for_timeout(500)
+        # Вибір населенного пункту
+        await page.click('#locality_form')
+        await page.fill('#locality_form', '')
+        await page.type('#locality_form', CITY, delay=100)
+        await page.wait_for_timeout(1500)
+        option_city = page.locator(f'text="{CITY}"')
+        if await option_city.count() > 0:
+            await option_city.first.click()
 
-        # Заповнюємо поле міста
-        await page.evaluate(f"""
-            const city = document.querySelector('#locality_form');
-            if(city) {{ city.value = "{CITY}"; city.dispatchEvent(new Event('input')) }}
-        """)
-        await page.wait_for_timeout(1000)
+        # Вибір вулиці
+        await page.click('#street_form')
+        await page.fill('#street_form', '')
+        await page.type('#street_form', STREET, delay=100)
+        await page.wait_for_timeout(1500)
+        option_street = page.locator(f'text="{STREET}"')
+        if await option_street.count() > 0:
+            await option_street.first.click()
 
-        # Заповнюємо поле вулиці
-        await page.evaluate(f"""
-            const street = document.querySelector('#street_form');
-            if(street) {{ street.value = "{STREET}"; street.dispatchEvent(new Event('input')) }}
-        """)
-        await page.wait_for_timeout(1000)
+        # Введення номера будинку
+        await page.fill('input[name="house"]', '')
+        await page.type('input[name="house"]', HOUSE, delay=100)
+        await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
 
-        # Заповнюємо поле будинку
-        await page.evaluate(f"""
-            const house = document.querySelector('input[name="house"]');
-            if(house) {{ house.value = "{HOUSE}"; house.dispatchEvent(new Event('input')) }}
-        """)
-        await page.wait_for_timeout(4000)  # чекаємо, поки JS побудує графік
-
-        # Робимо скріншот
+        # Створюємо скріншот
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
 
