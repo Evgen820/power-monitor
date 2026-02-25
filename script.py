@@ -17,10 +17,8 @@ STREET = "вул. Січова"
 HOUSE = "29"
 
 SCREENSHOT = "current.png"
-HASH_FILE = ".cache/power_monitor_hash.txt"  # зберігаємо локально
+HASH_FILE = ".cache/power_monitor_hash.txt"
 Path(".cache").mkdir(parents=True, exist_ok=True)
-
-# =========================
 
 def get_hash(path):
     with open(path, "rb") as f:
@@ -32,15 +30,20 @@ async def make_screenshot():
         page = await browser.new_page()
         await page.goto(URL, timeout=60000)
         await page.wait_for_load_state("networkidle")
-        await page.wait_for_timeout(2000)
+        await page.wait_for_timeout(2000)  # даємо час поп-апу з'явитись
 
-        # 🔹 Закриваємо всі поп-апи
-        await page.evaluate("""
-            document.querySelectorAll('.modal, .popup, .overlay').forEach(el => el.remove());
-        """)
-        await page.wait_for_timeout(500)
+        # Закриваємо поп-ап одразу після завантаження сторінки
+        try:
+            close_button = page.locator(
+                'button[aria-label="Закрити"], .modal__close, .popup__close, .close-button, .popup__close-btn'
+            )
+            await close_button.wait_for(timeout=5000)
+            await close_button.click()
+            await page.wait_for_timeout(500)
+        except Exception:
+            pass
 
-        # 🔹 Робимо поля видимими
+        # Робимо поля видимими
         await page.evaluate("""
             ['#locality_form','#street_form','input[name="house"]'].forEach(id => {
                 const el = document.querySelector(id);
@@ -49,30 +52,28 @@ async def make_screenshot():
         """)
         await page.wait_for_timeout(500)
 
-        # 🔹 Заповнюємо поля по черзі, з невеликими паузами, щоб уникнути Execution Context Error
-
-        # Поле міста
+        # Заповнюємо поле міста
         await page.evaluate(f"""
             const city = document.querySelector('#locality_form');
             if(city) {{ city.value = "{CITY}"; city.dispatchEvent(new Event('input')) }}
         """)
         await page.wait_for_timeout(1000)
 
-        # Поле вулиці
+        # Заповнюємо поле вулиці
         await page.evaluate(f"""
             const street = document.querySelector('#street_form');
             if(street) {{ street.value = "{STREET}"; street.dispatchEvent(new Event('input')) }}
         """)
         await page.wait_for_timeout(1000)
 
-        # Поле будинку
+        # Заповнюємо поле будинку
         await page.evaluate(f"""
             const house = document.querySelector('input[name="house"]');
             if(house) {{ house.value = "{HOUSE}"; house.dispatchEvent(new Event('input')) }}
         """)
         await page.wait_for_timeout(4000)  # чекаємо, поки JS побудує графік
 
-        # 🔹 Скриншот графіка
+        # Робимо скріншот
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
 
