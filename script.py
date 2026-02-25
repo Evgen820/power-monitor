@@ -20,10 +20,16 @@ SCREENSHOT = "current.png"
 HASH_FILE = ".cache/power_monitor_hash.txt"
 Path(".cache").mkdir(parents=True, exist_ok=True)
 
+# =========================
+# Допоміжні функції
+# =========================
 def get_hash(path):
     with open(path, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
 
+# =========================
+# Основна функція
+# =========================
 async def make_screenshot():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -38,8 +44,14 @@ async def make_screenshot():
         await page.mouse.click(10, 10)
         await page.wait_for_timeout(1000)
 
-        # Вибір населенного пункту
-        await page.click('#locality_form')
+        # --------------------------
+        # Населений пункт
+        # --------------------------
+        await page.wait_for_selector('#locality_form', state='visible', timeout=20000)
+        box = await page.locator('#locality_form').bounding_box()
+        if box:
+            await page.mouse.click(box["x"] + 5, box["y"] + 5)
+
         await page.fill('#locality_form', '')
         await page.type('#locality_form', CITY, delay=100)
         await page.wait_for_timeout(1500)
@@ -47,8 +59,14 @@ async def make_screenshot():
         if await option_city.count() > 0:
             await option_city.first.click()
 
-        # Вибір вулиці
-        await page.click('#street_form')
+        # --------------------------
+        # Вулиця
+        # --------------------------
+        await page.wait_for_selector('#street_form', state='visible', timeout=20000)
+        box = await page.locator('#street_form').bounding_box()
+        if box:
+            await page.mouse.click(box["x"] + 5, box["y"] + 5)
+
         await page.fill('#street_form', '')
         await page.type('#street_form', STREET, delay=100)
         await page.wait_for_timeout(1500)
@@ -56,15 +74,22 @@ async def make_screenshot():
         if await option_street.count() > 0:
             await option_street.first.click()
 
-        # Введення номера будинку
+        # --------------------------
+        # Номер будинку
+        # --------------------------
         await page.fill('input[name="house"]', '')
         await page.type('input[name="house"]', HOUSE, delay=100)
         await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
 
-        # Створюємо скріншот
+        # --------------------------
+        # Скриншот
+        # --------------------------
         await page.screenshot(path=SCREENSHOT, full_page=True)
         await browser.close()
 
+# =========================
+# Основний цикл
+# =========================
 async def main():
     await make_screenshot()
     new_hash = get_hash(SCREENSHOT)
@@ -79,4 +104,7 @@ async def main():
         await bot.send_photo(chat_id=CHAT_ID, photo=open(SCREENSHOT, "rb"))
         Path(HASH_FILE).write_text(new_hash)
 
+# =========================
+# Запуск
+# =========================
 asyncio.run(main())
