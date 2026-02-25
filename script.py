@@ -42,49 +42,32 @@ async def make_screenshot():
 
         # Закриваємо поп-ап кліком поза формою
         await page.mouse.click(10, 10)
-        await page.wait_for_timeout(2500)  # пауза для стабілізації
+        await page.wait_for_timeout(1500)
 
         # ===========================
-        # Населений пункт
+        # Заповнюємо поля через JS
         # ===========================
-        locator = page.locator('#locality_form')
-        box = await locator.bounding_box()
-        if box:
-            await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.type('#locality_form', CITY, delay=100)
-            await page.wait_for_timeout(1500)
-            option_city = page.locator(f'text="{CITY}"')
-            if await option_city.count() > 0:
-                await option_city.first.click()
-        else:
-            print("Не вдалося знайти поле #locality_form")
-
-        # ===========================
-        # Вулиця
-        # ===========================
-        locator = page.locator('#street_form')
-        box = await locator.bounding_box()
-        if box:
-            await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.type('#street_form', STREET, delay=100)
-            await page.wait_for_timeout(1500)
-            option_street = page.locator(f'text="{STREET}"')
-            if await option_street.count() > 0:
-                await option_street.first.click()
-        else:
-            print("Не вдалося знайти поле #street_form")
-
-        # ===========================
-        # Номер будинку
-        # ===========================
-        house_input = page.locator('#house')  # точний селектор для активного поля
-        box = await house_input.bounding_box()
-        if box:
-            await page.mouse.click(box["x"] + 5, box["y"] + 5)
-            await page.type('#house', HOUSE, delay=100)
-            await page.wait_for_timeout(3000)  # чекаємо поки графік згенерується
-        else:
-            print("Не вдалося знайти поле для номера будинку")
+        await page.evaluate(f"""
+            (() => {{
+                // Населений пункт
+                const cityInput = document.querySelector('#locality_form');
+                cityInput.value = "{CITY}";
+                cityInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                
+                // Вулиця
+                const streetInput = document.querySelector('#street_form');
+                streetInput.value = "{STREET}";
+                streetInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                
+                // Будинок
+                const houseInput = document.querySelector('#house');
+                houseInput.value = "{HOUSE}";
+                houseInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            }})();
+        """)
+        
+        # Чекаємо поки графік підвантажиться
+        await page.wait_for_timeout(4000)
 
         # ===========================
         # Скриншот
