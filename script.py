@@ -1,8 +1,8 @@
 import asyncio
-from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright
 from telegram import Bot
 
-# --- Налаштування ---
+# === Настройки ===
 TOKEN = "8307155981:AAEW0ZxzKgooySIjShzRq19IJ0V7I5uDVFQ"
 CHAT_ID = 366025497
 
@@ -13,61 +13,54 @@ HOUSE = "29"
 URL = "https://www.dtek-krem.com.ua/ua/shutdowns"
 SCREENSHOT_PATH = "screenshot.png"
 
-# --- Функція для автокомпліту ---
-async def select_autocomplete(page, selector, value):
-    input_el = page.locator(selector)
+async def select_autocomplete(page, input_selector, full_text):
     try:
-        # чекаємо, поки елемент прикріпиться до DOM
-        await input_el.wait_for(state="attached", timeout=30000)
-        await page.wait_for_timeout(1500)  # даємо JS активувати поле
-
-        # force-клік
+        input_el = page.locator(input_selector)
         await input_el.click(force=True)
-        # очищення через backspace
-        await input_el.type("\b" * 20, delay=50)
-        # вводимо текст
-        await input_el.type(value, delay=100)
-
-        # чекаємо і вибираємо перший варіант автокомпліту
-        dropdown_item = page.locator("ul[data-list] li").first
+        await asyncio.sleep(0.2)
+        await input_el.type(full_text, delay=100)  # печатаем по буквам
+        dropdown_item = page.locator(f"ul[data-list] li:has-text('{full_text}')")
         await dropdown_item.wait_for(state="visible", timeout=5000)
         await dropdown_item.click()
-    except PlaywrightTimeoutError:
-        print(f"Помилка: поле {selector} не активне або автокомпліт не з’явився.")
+    except Exception as e:
+        print(f"Ошибка: поле {input_selector} не активне или автокомпліт не з’явився. {e}")
 
-# --- Основна функція ---
 async def make_screenshot():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto(URL)
 
-        # Закриваємо поп-ап клікнувши поза формою
-        await page.mouse.click(10, 10)
-        await page.wait_for_timeout(1000)  # даємо час на анімацію
+        # Закрываем поп-ап кликом по свободной области
+        try:
+            await page.mouse.click(10, 10)
+            await asyncio.sleep(0.3)
+        except:
+            pass
 
-        # Заповнюємо поля
+        # Заполняем поля
         await select_autocomplete(page, "#locality_form", CITY)
         await select_autocomplete(page, "#street_form", STREET)
         await select_autocomplete(page, "#house", HOUSE)
 
-        # Даємо час JS відмалювати графік
-        await page.wait_for_timeout(2000)
+        # Ждём, пока график появится (примерно)
+        try:
+            await page.wait_for_selector("#chart", timeout=5000)
+        except:
+            print("График не появился вовремя, делаем скриншот всё равно.")
 
-        # Скриншот графіка
-        await page.screenshot(path=SCREENSHOT_PATH)
+        # Делаем скриншот
+        await page.screenshot(path=SCREENSHOT_PATH, full_page=True)
         await browser.close()
+        return SCREENSHOT_PATH
 
-    return SCREENSHOT_PATH
-
-# --- Відправка в Telegram ---
 async def main():
-    screenshot = await make_screenshot()
-    bot = Bot(token=TOKEN)
-    with open(screenshot, "rb") as f:
-        bot.send_photo(chat_id=CHAT_ID, photo=f)
-    print("Скріншот надіслано.")
+    screenshot_file = await make_screenshot()
 
-# --- Запуск ---
+    # Отправляем через Telegram
+    bot = Bot(token=TOKEN)
+    with open(screenshot_file, "rb") as f:
+        await bot.send_photo(chat_id=CHAT_ID, photo=f)
+
 if __name__ == "__main__":
     asyncio.run(main())
