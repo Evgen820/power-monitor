@@ -27,7 +27,7 @@ async def select_autocomplete(page, input_selector, full_text):
 
 async def make_screenshot():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=False, slow_mo=800)
         page = await browser.new_page()
         await page.goto(URL)
 
@@ -37,11 +37,33 @@ async def make_screenshot():
             await asyncio.sleep(0.3)
         except:
             pass
+ 
+        await page.locator("text=Введіть нас. пункт").click()
 
-        # Заполняем поля
-        await select_autocomplete(page, "#locality_form", CITY)
-        await select_autocomplete(page, "#street_form", STREET)
-        await select_autocomplete(page, "#house", HOUSE)
+       # Клік по населеному пункту
+        
+        await page.locator("role=textbox[name='Введіть нас. пункт']").fill("с. Софіївська Борщагівка")
+        await page.locator("text=с. Софіївська Борщагівка").click()
+# Клік по полю "Введіть вулицю"
+        await page.locator("text=Введіть вулицю").click()
+
+# Введення в поле "Введіть вулицю"
+        await page.locator("role=textbox[name='Введіть вулицю']").fill("січ")
+
+# Вибір із списку
+        await page.locator("text=січ").click()
+
+# Клік по полю "Номер будинку"
+        await page.locator("role=textbox[name='Номер будинку']").click()
+
+# Введення номера будинку
+        await page.locator("role=textbox[name='Номер будинку']").fill("29")
+
+# Вибір із списку (якщо з’являється)
+        await page.locator("text=29").click()
+       
+
+  
 
         # Ждём, пока график появится (примерно)
         try:
