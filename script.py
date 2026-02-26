@@ -27,7 +27,7 @@ async def select_autocomplete(page, input_selector, full_text):
 
 async def make_screenshot():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False, slow_mo=800)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto(URL)
 
