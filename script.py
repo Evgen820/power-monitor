@@ -46,18 +46,22 @@ async def make_screenshot():
         await page.locator("text=с. Софіївська Борщагівка").click()
 # Клік по полю "Введіть вулицю"
         await page.locator("text=Введіть вулицю").click()
+        await page.wait_for_timeout(5000)
 
 # Введення в поле "Введіть вулицю"
         await page.locator("role=textbox[name='Введіть вулицю']").fill("січ")
+        await page.wait_for_timeout(5000)
 
 # Вибір із списку
         await page.locator("text=січ").click()
 
 # Клік по полю "Номер будинку"
         await page.locator("role=textbox[name='Номер будинку']").click()
+        await page.wait_for_timeout(5000)
 
 # Введення номера будинку
         await page.locator("role=textbox[name='Номер будинку']").fill("29")
+        await page.wait_for_timeout(5000)
 
 # Вибір із списку (якщо з’являється)
         await page.locator("text=29").click()
