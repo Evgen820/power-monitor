@@ -39,16 +39,36 @@ async def make_screenshot():
             pass
  
         await page.locator("text=Введіть нас. пункт").click()
+        try:
+            await page.mouse.click(10, 10)
+            await asyncio.sleep(0.3)
+        except:
+            pass
+ 
 
        # Клік по населеному пункту
         
         await page.locator("role=textbox[name='Введіть нас. пункт']").fill("с. Софіївська Борщагівка")
         await page.locator("text=с. Софіївська Борщагівка").click()
 # Клік по полю "Введіть вулицю"
+        try:
+            await page.mouse.click(10, 10)
+            await asyncio.sleep(0.3)
+        except:
+            pass
+ 
+
         await page.locator("text=Введіть вулицю").click()
         await page.wait_for_timeout(5000)
 
 # Введення в поле "Введіть вулицю"
+        try:
+            await page.mouse.click(10, 10)
+            await asyncio.sleep(0.3)
+        except:
+            pass
+ 
+
         await page.locator("role=textbox[name='Введіть вулицю']").fill("січ")
         await page.wait_for_timeout(5000)
 
@@ -56,6 +76,13 @@ async def make_screenshot():
         await page.locator("text=січ").click()
 
 # Клік по полю "Номер будинку"
+        try:
+            await page.mouse.click(10, 10)
+            await asyncio.sleep(0.3)
+        except:
+            pass
+ 
+
         await page.locator("role=textbox[name='Номер будинку']").click()
         await page.wait_for_timeout(5000)
 
@@ -71,9 +98,12 @@ async def make_screenshot():
 
         # Ждём, пока график появится (примерно)
         try:
-            await page.wait_for_selector("#chart", timeout=5000)
+            await page.mouse.click(10, 10)
+            await asyncio.sleep(0.3)
         except:
-            print("График не появился вовремя, делаем скриншот всё равно.")
+            pass
+ 
+
 
         # Делаем скриншот
         await page.screenshot(path=SCREENSHOT_PATH, full_page=True)
