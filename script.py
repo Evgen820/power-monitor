@@ -4,7 +4,7 @@ from telegram import Bot
 
 # === Настройки ===
 TOKEN = "8307155981:AAEW0ZxzKgooySIjShzRq19IJ0V7I5uDVFQ"
-CHAT_ID = 366025497
+CHAT_ID = -5258950127
 
 CITY = "с. Софіївська Борщагівка"
 STREET = "вул. Січова"
